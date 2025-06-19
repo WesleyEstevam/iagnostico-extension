@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IAgnóstico — MVP</title>
+    <style>
+      :root {
+        --primary: #007bff;
+        --primary-dark: #0056b3;
+        --gray-bg: #f8f9fa;
+        --dark: #343a40;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: var(--gray-bg);
+        color: #333;
+      }
+
+      header {
+        background: var(--dark);
+        color: #fff;
+        padding: 1rem;
+        text-align: center;
+      }
+
+      main {
+        padding: 2rem;
+      }
+
+      .button {
+        background: var(--primary);
+        color: #fff;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1rem;
+        margin: 0.25rem;
+      }
+      .button:hover {
+        background: var(--primary-dark);
+      }
+
+      .button-secondary {
+        background: #6c757d;
+      }
+      .button-secondary:hover {
+        background: #565e64;
+      }
+
+      .hidden {
+        display: none;
+      }
+
+      .spinner {
+        border: 6px solid #f3f3f3;
+        border-top: 6px solid var(--primary);
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 2rem auto;
+      }
+
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+
+
+      /* Full‑screen modal */
+      .overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+      }
+      .modal {
+        background: #fff;
+        border-radius: 12px;
+        max-width: 500px;
+        width: 90%;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      }
+
+      .ia-analysis {
+        background: #fff;
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+        box-shadow: 0 0 12px rgba(0,0,0,0.07);
+        max-width: 700px;
+        margin: 1rem auto;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #222;
+      }
+
+      .ia-analysis h2 {
+        font-weight: 700;
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+        color: #003366;
+      }
+
+      .alert {
+        padding: 1rem 1.25rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        font-size: 0.95rem;
+      }
+
+      .alert-critical {
+        background-color: #fff3cd;
+        border: 1px solid #ffecb5;
+        color: #856404;
+      }
+
+      .alert-critical strong {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+      }
+
+      .diagnostic-list {
+        list-style-type: decimal;
+        padding-left: 1.5rem;
+        margin-bottom: 2rem;
+      }
+
+      .diagnostic-item {
+        margin-bottom: 1.25rem;
+        border: 1px solid #dcdcdc;
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        background-color: #f9fafb;
+      }
+
+      .title-confidence {
+        display: flex;
+        justify-content: space-between;
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 0.25rem;
+        color: #0056b3;
+      }
+
+      .confidence {
+        background: #d9f0ff;
+        border-radius: 12px;
+        padding: 0.2rem 0.6rem;
+        font-weight: 600;
+        color: #0056b3;
+        font-size: 0.9rem;
+      }
+
+      .justificativa-link {
+        font-size: 0.9rem;
+        color: #0066cc;
+        cursor: pointer;
+        display: inline-block;
+        margin-bottom: 0.5rem;
+        text-decoration: underline;
+      }
+
+      .contributing-factors {
+        list-style-type: disc;
+        margin-left: 1rem;
+        font-size: 0.9rem;
+        color: #444;
+      }
+
+      .recommended-actions {
+        list-style-type: disc;
+        padding-left: 1.5rem;
+        font-size: 1rem;
+        color: #333;
+      }
+
+      button.button {
+        margin-top: 1.5rem;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        width: fit-content;
+        font-weight: 700;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>IAgnóstico</h1>
+      <p>Assistente Inteligente para Diagnóstico Médico — MVP</p>
+    </header>
+
+    <main>
+      <!-- 1. Login -->
+      <div id="login">
+        <h2>Entrar</h2>
+        <input type="text" placeholder="Usuário" id="username" /><br /><br />
+        <input type="password" placeholder="Senha" id="password" /><br /><br />
+        <button class="button" id="login-btn">Entrar</button>
+      </div>
+
+      <!-- 2. Aguardando -->
+      <div id="aguardando" class="hidden">
+        <h2>Aguardando Atendimento...</h2>
+        <p>
+          Sua solicitação foi enviada. Aguarde até que o prontuário seja salvo.
+        </p>
+        <!-- Botão de simulação apenas para o MVP -->
+        <button id="simular-prontuario" class="button">
+          🔓 Simular prontuário salvo
+        </button>
+      </div>
+
+    <!-- Popup fullscreen -->
+    <div id="modal-overlay" class="hidden">
+      <div class="modal">
+        <h2>Deseja acrescentar mais alguma informação ao prontuário?</h2>
+        <button class="button" id="btn-sim">Sim</button>
+        <button class="button button-secondary" id="btn-nao">Não</button>
+      </div>
+    </div>
+
+    <!-- 3. Diagnóstico final -->
+    <div id="diagnostico" class="hidden"></div>
+
+
+    <script src="script.js"></script>
+  </body>
+</html>

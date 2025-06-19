@@ -1,0 +1,20 @@
+{
+  "manifest_version": 3,
+  "name": "IAgnóstico",
+  "version": "1.0",
+  "description": "Assistente IA para auxiliar no diagnóstico médico.",
+  "permissions": ["scripting", "tabs"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Abrir IAgnóstico"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["index.html", "script.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
