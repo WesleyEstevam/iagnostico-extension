@@ -74,58 +74,61 @@ document.addEventListener("DOMContentLoaded", () => {
     const diagnosticoDiv = document.getElementById("diagnostico");
     diagnosticoDiv.innerHTML = `
     <section class="ia-analysis">
-
       <h2>Análise por IA</h2>
+      <h4 style="text-align: center;">Sugestões de Diagnóstico</h4>
 
-      <div class="alert alert-critical">
-        <strong>🚩 Alertas Críticos (Bandeiras Vermelhas)</strong>
-        <ul>
-          <li>Plaquetopenia (&lt;100.000) e dor abdominal são sinais de alarme para Dengue.</li>
-          <li>Risco elevado de sangramento se prescrito AINEs.</li>
-        </ul>
+      <div class="diagnostic-list">
+        <div class="diagnostic-item">
+          <div class="title-confidence">
+            <strong class="diagnostic-rank">Dengue</strong>
+            <span class="confidence">Confiança: <strong>85%</strong></span>
+          </div>
+          Justificativa:
+          <ul class="contributing-factors">
+            <li>Febre alta e cefaleia retro-orbital (Peso: Alto)</li>
+            <li>Leucopenia e Plaquetopenia (Peso: Alto)</li>
+            <li>Dados epidemiológicos para Fortaleza (Peso: Médio)</li>
+          </ul>
+        </div>
+
+        <div class="diagnostic-item">
+          <div class="title-confidence">
+            <strong class="diagnostic-rank">Chikungunya</strong>
+            <span class="confidence">Confiança: <strong>10%</strong></span>
+          </div>
+          Justificativa:
+          <ul class="contributing-factors">
+            <li>Dor articular intensa é comum, mas outros sinais são menos específicos. (Peso: Baixo)</li>
+          </ul>
+        </div>
       </div>
 
-      <h3>Hipóteses Diagnósticas</h3>
-
-      <ol class="diagnostic-list">
-        <li>
-          <div class="diagnostic-item">
-            <div class="title-confidence">
-              <span class="diagnostic-rank">1. Dengue</span>
-              <span class="confidence">Confiança: <strong>85%</strong></span>
-            </div>
-            <a href="#" class="justificativa-link">Ver Justificativa</a>
-            <ul class="contributing-factors">
-              <li>Febre alta e cefaleia retro-orbital (Peso: Alto)</li>
-              <li>Leucopenia e Plaquetopenia (Peso: Alto)</li>
-              <li>Dados epidemiológicos para Fortaleza (Peso: Médio)</li>
-            </ul>
-          </div>
-        </li>
-
-        <li>
-          <div class="diagnostic-item">
-            <div class="title-confidence">
-              <span class="diagnostic-rank">2. Chikungunya</span>
-              <span class="confidence">Confiança: <strong>10%</strong></span>
-            </div>
-            <a href="#" class="justificativa-link">Ver Justificativa</a>
-            <ul class="contributing-factors">
-              <li>Dor articular intensa é comum, mas outros sinais são menos específicos. (Peso: Baixo)</li>
-            </ul>
-          </div>
-        </li>
-      </ol>
-
       <h3>Ações Recomendadas</h3>
-
       <ul class="recommended-actions">
         <li>Hemograma e plaquetas (urgente)</li>
         <li>Sorologia para Dengue (NS1)</li>
       </ul>
 
+      <div class="decision-box">
+        <p>Você aceita o diagnóstico sugerido pela IA?</p>
+        <div class="decision-buttons">
+          <button class="button" onclick="aceitarDiagnostico()">✅ Aceitar</button>
+          <button class="button button-secondary" onclick="revisarDiagnostico()">🔄 Revisar</button>
+        </div>
+      </div>
     </section>
-    <button class="button" onclick="reiniciar()">Nova consulta</button>
   `;
+  }
+  function aceitarDiagnostico() {
+    alert("Diagnóstico aceito! Encaminhado para o prontuário.");
+    reiniciar();
+  }
+
+  function revisarDiagnostico() {
+    alert(
+      "Modo de revisão ativado. Redirecionando para interface de edição..."
+    );
+    // Aqui você pode trocar por redirecionamento ou abrir um formulário.
+    reiniciar();
   }
 });
