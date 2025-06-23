@@ -1,16 +1,44 @@
 document.addEventListener("DOMContentLoaded", () => {
-  /* ---------- Login ---------- */
-  const loginBtn = document.getElementById("login-btn");
-  loginBtn.addEventListener("click", () => {
-    const user = document.getElementById("username").value.trim();
-    const pass = document.getElementById("password").value.trim();
+  const firebaseConfig = {
+    apiKey: "AIzaSyBWvCRmCStncTELIO187xy_gTkfzdybN8s",
+    authDomain: "iagnostico-424f5.firebaseapp.com",
+    projectId: "iagnostico-424f5",
+    storageBucket: "iagnostico-424f5.appspot.com",
+    messagingSenderId: "533601973345",
+    appId: "1:533601973345:web:3adfd031563a7ebd216620",
+    measurementId: "G-3E0RPRBWV9"
+  };
 
-    if (user && pass) {
-      toggle("login", false);
-      toggle("aguardando", true);
-    } else {
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+
+  /* ---------- Login ---------- */
+const loginBtn = document.getElementById("login-btn");
+  loginBtn.addEventListener("click", () => {
+    const email = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    if (!email || !password) {
       alert("Por favor, preencha todos os campos!");
+      return;
     }
+
+    auth.signInWithEmailAndPassword(email, password)
+      .then((userCredential) => {
+        toggle("login", false);
+        toggle("aguardando", true);
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        let mensagem = "Erro ao fazer login.";
+
+        if (errorCode === "auth/user-not-found") mensagem = "Usuário não encontrado.";
+        else if (errorCode === "auth/wrong-password") mensagem = "Senha incorreta.";
+        else if (errorCode === "auth/invalid-email") mensagem = "E-mail inválido.";
+
+        alert(mensagem);
+      });
   });
 
   /* ---------- Simulação de prontuário salvo ---------- */
