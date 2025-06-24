@@ -53,7 +53,7 @@
       }
 
       .hidden {
-        display: none;
+        display: none !important;
       }
 
       .spinner {
@@ -90,6 +90,13 @@
         padding: 2rem;
         text-align: center;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      }
+
+      .modal-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1.5rem;
       }
 
       .ia-analysis {
@@ -217,6 +224,15 @@
         gap: 1rem;
       }
 
+      #input-info {
+        width: 100%; 
+        margin-top: 1rem; 
+        padding: 0.75rem; 
+        border-radius: 8px; 
+        border: 1px solid #ccc; 
+        resize: vertical;
+      }
+
     </style>
   </head>
   <body>
@@ -247,13 +263,27 @@
       </div>
 
     <!-- Popup fullscreen -->
-    <div id="modal-overlay" class="hidden">
+    <div id="modal-overlay" class="hidden overlay">
       <div class="modal">
         <h2>Deseja acrescentar mais alguma informação ao prontuário?</h2>
-        <button class="button" id="btn-sim">Sim</button>
-        <button class="button button-secondary" id="btn-nao">Não</button>
+        <div class="modal-buttons">
+          <button class="button" id="btn-sim">Sim</button>
+          <button class="button button-secondary" id="btn-nao">Não</button>
+        </div>
       </div>
     </div>
+
+    <!-- Segundo popup -->
+    <div id="modal-input-overlay" class="hidden overlay">
+      <div class="modal">
+        <h2>Digite o que está faltando</h2>
+        <textarea id="input-info" rows="5" placeholder="Digite aqui..."></textarea>
+        <div style="margin-top: 1.5rem;">
+          <button class="button" id="btn-enviar">Enviar</button>
+        </div>
+      </div>
+    </div>
+
 
     <!-- 3. Diagnóstico final -->
     <div id="diagnostico" class="hidden"></div>
