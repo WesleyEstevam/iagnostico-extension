@@ -228,6 +228,14 @@ document.addEventListener("DOMContentLoaded", () => {
     document
       .getElementById("btn-revisar")
       .addEventListener("click", revisarDiagnostico);
+
+    // Evento para o botão de retornar ao diagnóstico anterior (se existir)
+    const btnVoltarAnterior = document.getElementById("btn-voltar-anterior");
+    if (btnVoltarAnterior) {
+      btnVoltarAnterior.addEventListener("click", () => {
+        mostrarTelaDiagnosticoFinal(diagnosticoAnterior);
+      });
+    }
   }
 
   function revisarDiagnostico() {
@@ -264,6 +272,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const novoDiagnostico = data.resultado;
 
+        // Salva o diagnóstico atual como anterior antes de sobrescrever
+        const diagnosticoAtualBackup = diagnosticoAnterior;
+
         // Verifica se o novo resultado tem menor confiança que o anterior
         const confiancaAnterior =
           diagnosticoAnterior?.diagnosticos?.[0]?.confianca || 0;
@@ -273,26 +284,41 @@ document.addEventListener("DOMContentLoaded", () => {
         const alertaHTML =
           confiancaNova < confiancaAnterior
             ? `
-        <div style="
-          background-color: #fff3cd;
-          color: #856404;
-          border: 1px solid #ffeeba;
-          padding: 10px;
-          border-radius: 8px;
-          margin-bottom: 16px;
-        ">
-          A nova sugestão da IA tem menor probabilidade de acerto que a anterior.
-          <br><strong>Considere manter o diagnóstico anterior.</strong>
-        </div>
-      `
+    <div style="
+      background-color: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    ">
+      A nova sugestão da IA tem menor probabilidade de acerto que a anterior.
+      <br><strong>Considere manter o diagnóstico anterior.</strong>
+      <br><button class="button button-small" id="btn-voltar-anterior" style="margin-top: 10px;">🔙 Voltar para diagnóstico anterior</button>
+    </div>
+  `
             : "";
 
-        // Renderiza nova análise com ou sem alerta
         mostrarTelaDiagnosticoFinal(novoDiagnostico, alertaHTML);
 
-        // Atualiza o diagnóstico anterior para futura comparação
+        // Associa o evento do botão após renderizar
+        setTimeout(() => {
+          const btnVoltar = document.getElementById("btn-voltar-anterior");
+          if (btnVoltar) {
+            btnVoltar.addEventListener("click", () => {
+              if (diagnosticoAtualBackup) {
+                mostrarTelaDiagnosticoFinal(diagnosticoAtualBackup);
+              } else {
+                alert("Não há diagnóstico anterior disponível.");
+              }
+            });
+          }
+        }, 100);
+
+        // Atualiza o diagnóstico anterior com o novo, depois de já ter usado o backup
         diagnosticoAnterior = novoDiagnostico;
       })
+
       .catch((err) => {
         loadingContainer.remove();
         alert("Erro ao reprocessar diagnóstico.");
