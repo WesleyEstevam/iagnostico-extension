@@ -1,7 +1,11 @@
 document.addEventListener("DOMContentLoaded", () => {
   let diagnosticoAnterior = null;
-  let sintomasUsados =
-    "Tosse persistente com sangue, falta de ar, dor torácica, perda de peso rápida, fadiga intensa.";
+  let sintomasUsados = "Falta de ar, tosse seca e dor torácica";
+  let contextoClinico =
+    "Homem de 45 anos, teve COVID-19 há 2 meses, com internação e uso de oxigênio. Atualmente sente fadiga crônica e dor leve ao respirar fundo";
+  let examesRealizados =
+    "TC de tórax com áreas de fibrose residual. Espirometria com padrão restritivo leve.";
+  let queixaPrincipal = "Cansaço extremo ao subir escadas";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBWvCRmCStncTELIO187xy_gTkfzdybN8s",
@@ -127,6 +131,9 @@ document.addEventListener("DOMContentLoaded", () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         sintomas: sintomasUsados,
+        contextoClinico: contextoClinico,
+        queixaPrincipal: queixaPrincipal,
+        examesRealizados: examesRealizados,
       }),
     })
       .then((res) => res.json())
