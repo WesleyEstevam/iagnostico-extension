@@ -1,4 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
+  let diagnosticoAnterior = null;
+  let sintomasUsados =
+    "Tosse persistente com sangue, falta de ar, dor torácica, perda de peso rápida, fadiga intensa.";
+
   const firebaseConfig = {
     apiKey: "AIzaSyBWvCRmCStncTELIO187xy_gTkfzdybN8s",
     authDomain: "iagnostico-424f5.firebaseapp.com",
@@ -13,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const auth = firebase.auth();
 
   /* ---------- Login ---------- */
+  /*
   const loginBtn = document.getElementById("login-btn");
   loginBtn.addEventListener("click", () => {
     const email = document.getElementById("username").value.trim();
@@ -43,7 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
         alert(mensagem);
       });
   });
-
+*/
   /* ---------- Simulação de prontuário salvo ---------- */
   document
     .getElementById("simular-prontuario")
@@ -99,7 +104,6 @@ document.addEventListener("DOMContentLoaded", () => {
     fecharPopup();
     toggle("aguardando", false);
 
-    // Criar elemento de carregamento (spinner + texto)
     const main = document.querySelector("main");
 
     const loadingContainer = document.createElement("div");
@@ -118,12 +122,176 @@ document.addEventListener("DOMContentLoaded", () => {
     loadingContainer.appendChild(texto);
     main.appendChild(loadingContainer);
 
-    // Simular tempo de processamento e exibir tela final
-    setTimeout(() => {
-      loadingContainer.remove();
-      mostrarTelaDiagnosticoFinal();
-    }, 4000);
+    fetch("http://localhost:3000/api/gerar-diagnostico", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sintomas: sintomasUsados,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log("Resposta do backend:", data);
+
+        const resultado = data.resultado;
+        loadingContainer.remove();
+
+        if (!resultado) throw new Error("Resposta vazia da IA");
+
+        // Resultado é um objeto JSON
+        mostrarTelaDiagnosticoFinal(resultado);
+        diagnosticoAnterior = resultado;
+      })
+      .catch((err) => {
+        loadingContainer.remove();
+        alert("Erro ao gerar diagnóstico com IA.");
+        console.error(err);
+      });
   });
+
+  /* Função para apresentar os diagnósticos */
+
+  function mostrarTelaDiagnosticoFinal(resultado, alertaHTML = "") {
+    if (!resultado?.diagnosticos || !resultado?.recomendacoes) {
+      document.getElementById("diagnostico").innerHTML = `
+      <p>Erro ao processar diagnóstico. A IA não retornou um conteúdo válido.</p>
+    `;
+      return;
+    }
+    toggle("diagnostico", true);
+    const diagnosticoDiv = document.getElementById("diagnostico");
+
+    const diagnosticos = resultado?.diagnosticos || [];
+    const recomendacoes = resultado?.recomendacoes || [];
+
+    const diagnosticosHTML = diagnosticos
+      .map((diag) => {
+        const justificativas = diag.justificativas.slice(0, 2);
+        const justificativasHTML = justificativas
+          .map((j) => `<li>${j}</li>`)
+          .join("");
+
+        return `
+        <div class="diagnostic-item">
+          <div class="title-confidence">
+            <strong class="diagnostic-rank">${diag.nome}</strong>
+            <span class="confidence">Confiança: <strong>${diag.confianca}%</strong></span>
+          </div>
+          Justificativa:
+          <ul class="contributing-factors" style="margin-top: 0.5rem;">
+            ${justificativasHTML}
+          </ul>
+        </div>
+      `;
+      })
+      .join("");
+
+    const recomendacoesHTML = recomendacoes
+      .map((r) => `<li>${r}</li>`)
+      .join("");
+
+    diagnosticoDiv.innerHTML = `
+    <section class="ia-analysis">
+    ${alertaHTML}
+      <h2>Análise por IA</h2>
+      <h4 style="text-align: center;">Sugestões de Diagnóstico</h4>
+
+      <div class="diagnostic-list">
+        ${diagnosticosHTML}
+      </div>
+
+      <h3>Ações Recomendadas</h3>
+      <ul class="recommended-actions">
+        ${recomendacoesHTML}
+      </ul>
+
+      <div class="decision-box">
+        <p>Você aceita o diagnóstico sugerido pela IA?</p>
+        <div class="decision-buttons">
+          <button class="button" id="btn-aceitar">✅ Aceitar</button>
+          <button class="button button-secondary" id="btn-revisar">🔄 Revisar</button>
+        </div>
+      </div>
+    </section>
+  `;
+
+    document
+      .getElementById("btn-aceitar")
+      .addEventListener("click", aceitarDiagnostico);
+    document
+      .getElementById("btn-revisar")
+      .addEventListener("click", revisarDiagnostico);
+  }
+
+  function revisarDiagnostico() {
+    toggle("aguardando", false);
+
+    const main = document.querySelector("main");
+
+    const loadingContainer = document.createElement("div");
+    loadingContainer.id = "loading";
+
+    const spinner = document.createElement("div");
+    spinner.classList.add("spinner");
+
+    const texto = document.createElement("p");
+    texto.textContent = "Reprocessando com IA...";
+    texto.style.textAlign = "center";
+    texto.style.color = "#666";
+    texto.style.fontStyle = "italic";
+
+    loadingContainer.appendChild(spinner);
+    loadingContainer.appendChild(texto);
+    main.appendChild(loadingContainer);
+
+    fetch("http://localhost:3000/api/gerar-diagnostico", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sintomas: sintomasUsados,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        loadingContainer.remove();
+
+        const novoDiagnostico = data.resultado;
+
+        // Verifica se o novo resultado tem menor confiança que o anterior
+        const confiancaAnterior =
+          diagnosticoAnterior?.diagnosticos?.[0]?.confianca || 0;
+        const confiancaNova =
+          novoDiagnostico?.diagnosticos?.[0]?.confianca || 0;
+
+        const alertaHTML =
+          confiancaNova < confiancaAnterior
+            ? `
+        <div style="
+          background-color: #fff3cd;
+          color: #856404;
+          border: 1px solid #ffeeba;
+          padding: 10px;
+          border-radius: 8px;
+          margin-bottom: 16px;
+        ">
+          A nova sugestão da IA tem menor probabilidade de acerto que a anterior.
+          <br><strong>Considere manter o diagnóstico anterior.</strong>
+        </div>
+      `
+            : "";
+
+        // Renderiza nova análise com ou sem alerta
+        mostrarTelaDiagnosticoFinal(novoDiagnostico, alertaHTML);
+
+        // Atualiza o diagnóstico anterior para futura comparação
+        diagnosticoAnterior = novoDiagnostico;
+      })
+      .catch((err) => {
+        loadingContainer.remove();
+        alert("Erro ao reprocessar diagnóstico.");
+        console.error(err);
+      });
+  }
 
   /* ---------- Helpers ---------- */
   function abrirPopup() {
@@ -140,156 +308,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function aceitarDiagnostico() {
     alert("Diagnóstico aceito! Encaminhado para o prontuário.");
-  }
-
-  function revisarDiagnostico() {
-    // Esconde a tela atual
-    toggle("diagnostico", false);
-
-    // Spinner de novo diagnóstico
-    const main = document.querySelector("main");
-
-    const loadingContainer = document.createElement("div");
-    loadingContainer.id = "loading";
-
-    const spinner = document.createElement("div");
-    spinner.classList.add("spinner");
-
-    const texto = document.createElement("p");
-    texto.textContent = "Gerando nova análise com IA...";
-    texto.style.textAlign = "center";
-    texto.style.color = "#666";
-    texto.style.fontStyle = "italic";
-
-    loadingContainer.appendChild(spinner);
-    loadingContainer.appendChild(texto);
-    main.appendChild(loadingContainer);
-
-    // Simula novo diagnóstico após 4 segundos
-    setTimeout(() => {
-      loadingContainer.remove();
-
-      // Nova versão do diagnóstico (simulada)
-      mostrarTelaDiagnosticoFinal_v2(); // nova função que você vai criar abaixo
-    }, 4000);
-  }
-
-  function mostrarTelaDiagnosticoFinal() {
-    toggle("diagnostico", true);
-
-    const diagnosticoDiv = document.getElementById("diagnostico");
-    diagnosticoDiv.innerHTML = `
-    <section class="ia-analysis">
-      <h2>Análise por IA</h2>
-      <h4 style="text-align: center;">Sugestões de Diagnóstico</h4>
-
-      <div class="diagnostic-list">
-        <div class="diagnostic-item">
-          <div class="title-confidence">
-            <strong class="diagnostic-rank">Dengue</strong>
-            <span class="confidence">Confiança: <strong>85%</strong></span>
-          </div>
-          Justificativa:
-          <ul class="contributing-factors">
-            <li>Febre alta e cefaleia retro-orbital (Peso: Alto)</li>
-            <li>Leucopenia e Plaquetopenia (Peso: Alto)</li>
-            <li>Dados epidemiológicos para Fortaleza (Peso: Médio)</li>
-          </ul>
-        </div>
-
-        <div class="diagnostic-item">
-          <div class="title-confidence">
-            <strong class="diagnostic-rank">Chikungunya</strong>
-            <span class="confidence">Confiança: <strong>10%</strong></span>
-          </div>
-          Justificativa:
-          <ul class="contributing-factors">
-            <li>Dor articular intensa é comum, mas outros sinais são menos específicos. (Peso: Baixo)</li>
-          </ul>
-        </div>
-      </div>
-
-      <h3>Ações Recomendadas</h3>
-      <ul class="recommended-actions">
-        <li>Hemograma e plaquetas (urgente)</li>
-        <li>Sorologia para Dengue (NS1)</li>
-      </ul>
-
-        <div class="decision-box">
-          <p>Você aceita o diagnóstico sugerido pela IA?</p>
-          <div class="decision-buttons">
-            <button class="button" id="btn-aceitar">✅ Aceitar</button>
-            <button class="button button-secondary" id="btn-revisar">🔄 Revisar</button>
-          </div>
-        </div>
-      </section>
-
-      `;
-    // ✅ Registrando eventos após inserção do HTML
-    document
-      .getElementById("btn-aceitar")
-      .addEventListener("click", aceitarDiagnostico);
-    document
-      .getElementById("btn-revisar")
-      .addEventListener("click", revisarDiagnostico);
-  }
-
-  function mostrarTelaDiagnosticoFinal_v2() {
-    toggle("diagnostico", true);
-
-    const diagnosticoDiv = document.getElementById("diagnostico");
-    diagnosticoDiv.innerHTML = `
-    <section class="ia-analysis">
-      <h2>Nova Análise por IA</h2>
-      <h4 style="text-align: center;">Sugestões de Diagnóstico</h4>
-
-      <div class="diagnostic-list">
-        <div class="diagnostic-item">
-          <div class="title-confidence">
-            <strong class="diagnostic-rank">Zika Vírus</strong>
-            <span class="confidence">Confiança: <strong>70%</strong></span>
-          </div>
-          Justificativa:
-          <ul class="contributing-factors">
-            <li>Exantema e conjuntivite (Peso: Alto)</li>
-            <li>Leve febre e histórico de surtos na região (Peso: Médio)</li>
-          </ul>
-        </div>
-
-        <div class="diagnostic-item">
-          <div class="title-confidence">
-            <strong class="diagnostic-rank">Dengue</strong>
-            <span class="confidence">Confiança: <strong>20%</strong></span>
-          </div>
-          Justificativa:
-          <ul class="contributing-factors">
-            <li>Febre e dor de cabeça, porém sem sinais laboratoriais marcantes. (Peso: Baixo)</li>
-          </ul>
-        </div>
-      </div>
-
-      <h3>Novas Ações Recomendadas</h3>
-      <ul class="recommended-actions">
-        <li>Coleta de sorologia viral</li>
-        <li>Encaminhamento para acompanhamento ambulatorial</li>
-      </ul>
-
-        <div class="decision-box">
-          <p>Você aceita o novo diagnóstico sugerido pela IA?</p>
-          <div class="decision-buttons">
-            <button class="button" id="btn-aceitar">✅ Aceitar</button>
-            <button class="button button-secondary" id="btn-revisar">🔄 Revisar</button>
-          </div>
-        </div>
-      </section>
-      
-      `;
-    // ✅ Novamente, registre os eventos depois de inserir o HTML
-    document
-      .getElementById("btn-aceitar")
-      .addEventListener("click", aceitarDiagnostico);
-    document
-      .getElementById("btn-revisar")
-      .addEventListener("click", revisarDiagnostico);
   }
 });

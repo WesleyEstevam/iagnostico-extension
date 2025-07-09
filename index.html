@@ -233,28 +233,40 @@
         resize: vertical;
       }
 
+      #aguardando {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        height: 65vh; 
+      }
+
     </style>
   </head>
   <body>
     <header>
       <h1>IAgnóstico</h1>
-      <p>Assistente Inteligente para Diagnóstico Médico — MVP</p>
+      <p>Assistente Inteligente para Diagnóstico Médico</p>
     </header>
 
     <main>
       <!-- 1. Login -->
+      <!--
       <div id="login">
         <h2>Entrar</h2>
         <input type="text" placeholder="Usuário" id="username" /><br /><br />
         <input type="password" placeholder="Senha" id="password" /><br /><br />
         <button class="button" id="login-btn">Entrar</button>
       </div>
-
+      -->
       <!-- 2. Aguardando -->
-      <div id="aguardando" class="hidden">
-        <h2>Aguardando Atendimento...</h2>
+       
+      <div id="aguardando">
+        <img src="./img/Protótipo IAgnóstico - 1 - Editado.png">
+        <h2>Aguardando atendimento...</h2>
         <p>
-          Sua solicitação foi enviada. Aguarde até que o prontuário seja salvo.
+          Aguardando até que o prontuário seja salvo.
         </p>
         <!-- Botão de simulação apenas para o MVP -->
         <button id="simular-prontuario" class="button">

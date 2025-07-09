@@ -3,8 +3,12 @@
   "name": "IAgnóstico",
   "version": "1.0",
   "description": "Assistente IA para auxiliar no diagnóstico médico.",
-  "permissions": ["scripting", "tabs"],
-  "host_permissions": ["<all_urls>"],
+  "permissions": ["scripting", "tabs", "storage"],
+  "host_permissions": [
+    "https://chatgpt.com/*",
+    "https://iagnostico-backend-1bimslsl6-wesleyestevams-projects.vercel.app/*",
+    "https://demo.openemr.io/openemr/interface/*"
+  ],
   "background": {
     "service_worker": "background.js"
   },

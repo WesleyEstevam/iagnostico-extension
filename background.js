@@ -1,8 +1,7 @@
 // Lista de URLs onde a sidebar deve abrir automaticamente
 const autoInjectHosts = [
-  "https://hospitalabc.com/prontuario", // exemplo
-  "https://*.meuhospital.com/prontuario", // suporte a wildcard (ver abaixo)
-  "https://chatgpt.com/",
+  "https://demo.openemr.io/openemr/interface/*",
+  "https://chatgpt.com/*",
 ];
 
 // Verifica se a URL corresponde a algum domínio da lista
