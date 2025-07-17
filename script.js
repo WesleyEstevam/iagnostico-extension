@@ -1,12 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-  let diagnosticoAnterior = null;
-  let sintomasUsados = "Falta de ar, tosse seca e dor torácica";
-  let contextoClinico =
-    "Homem de 45 anos, teve COVID-19 há 2 meses, com internação e uso de oxigênio. Atualmente sente fadiga crônica e dor leve ao respirar fundo";
-  let examesRealizados =
-    "TC de tórax com áreas de fibrose residual. Espirometria com padrão restritivo leve.";
-  let queixaPrincipal = "Cansaço extremo ao subir escadas";
-
   const firebaseConfig = {
     apiKey: "AIzaSyBWvCRmCStncTELIO187xy_gTkfzdybN8s",
     authDomain: "iagnostico-424f5.firebaseapp.com",
@@ -105,6 +97,22 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("btn-nao").addEventListener("click", () => {
+    const prontuarioSalvo = JSON.parse(
+      localStorage.getItem("prontuario_atual") || "{}"
+    );
+
+    const sintomasUsados = prontuarioSalvo.sintomas || "";
+    const contextoClinico = prontuarioSalvo.contextoClinico || "";
+    const examesRealizados = prontuarioSalvo.examesRealizados || "";
+    const queixaPrincipal = prontuarioSalvo.queixaPrincipal || "";
+
+    console.log("Dados capturados no clique:", {
+      sintomasUsados,
+      contextoClinico,
+      examesRealizados,
+      queixaPrincipal,
+    });
+
     fecharPopup();
     toggle("aguardando", false);
 
@@ -126,14 +134,23 @@ document.addEventListener("DOMContentLoaded", () => {
     loadingContainer.appendChild(texto);
     main.appendChild(loadingContainer);
 
+    const payload = {
+      sintomas: sintomasUsados,
+      contextoClinico: contextoClinico,
+      queixaPrincipal: queixaPrincipal,
+      examesRealizados: examesRealizados,
+    };
+
+    console.log("Payload enviado para IA:", JSON.stringify(payload, null, 2));
+
     fetch("http://localhost:3000/api/gerar-diagnostico", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        sintomas: sintomasUsados,
-        contextoClinico: contextoClinico,
-        queixaPrincipal: queixaPrincipal,
-        examesRealizados: examesRealizados,
+        sintomas: sintomasUsados.trim(),
+        contextoClinico: contextoClinico.trim(),
+        queixaPrincipal: queixaPrincipal.trim(),
+        examesRealizados: examesRealizados.trim(),
       }),
     })
       .then((res) => res.json())

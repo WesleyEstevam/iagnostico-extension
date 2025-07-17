@@ -1,7 +1,8 @@
 // Lista de URLs onde a sidebar deve abrir automaticamente
 const autoInjectHosts = [
-  "https://demo.openemr.io/openemr/interface/*",
+  "https://prontuarioeletronico-exemplo.vercel.app/*",
   "https://chatgpt.com/*",
+  "http://127.0.0.1:5500/index.html/*",
 ];
 
 // Verifica se a URL corresponde a algum domínio da lista
@@ -36,4 +37,22 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === "complete" && shouldAutoInject(tab.url)) {
     inject(tabId, tab.url);
   }
+
+  chrome.runtime.onMessageExternal.addListener(
+    (message, sender, sendResponse) => {
+      if (message.type === "PRONTUARIO_SALVO") {
+        console.log("Prontuário recebido:", message.payload);
+
+        // Armazena no localStorage da extensão
+        chrome.storage.local.set({ prontuario: message.payload }, () => {
+          sendResponse({
+            status: "OK",
+            message: "Dados armazenados na extensão.",
+          });
+        });
+
+        return true; // necessário para usar sendResponse async
+      }
+    }
+  );
 });
