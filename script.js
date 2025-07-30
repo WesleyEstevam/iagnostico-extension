@@ -97,22 +97,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("btn-nao").addEventListener("click", () => {
-    const prontuarioSalvo = JSON.parse(
-      localStorage.getItem("prontuario_atual") || "{}"
-    );
-
-    const sintomasUsados = prontuarioSalvo.sintomas || "";
-    const contextoClinico = prontuarioSalvo.contextoClinico || "";
-    const examesRealizados = prontuarioSalvo.examesRealizados || "";
-    const queixaPrincipal = prontuarioSalvo.queixaPrincipal || "";
-
-    console.log("Dados capturados no clique:", {
-      sintomasUsados,
-      contextoClinico,
-      examesRealizados,
-      queixaPrincipal,
-    });
-
     fecharPopup();
     toggle("aguardando", false);
 
@@ -134,25 +118,33 @@ document.addEventListener("DOMContentLoaded", () => {
     loadingContainer.appendChild(texto);
     main.appendChild(loadingContainer);
 
-    const payload = {
-      sintomas: sintomasUsados,
-      contextoClinico: contextoClinico,
-      queixaPrincipal: queixaPrincipal,
-      examesRealizados: examesRealizados,
-    };
+    // 🧠 Buscando prontuário via HTTP (novo back-end)
+    fetch("http://localhost:3001/prontuario")
+      .then((res) => {
+        if (!res.ok) throw new Error("Erro ao buscar prontuário.");
+        return res.json();
+      })
+      .then((prontuario) => {
+        console.log("Prontuário recebido do back-end:", prontuario);
 
-    console.log("Payload enviado para IA:", JSON.stringify(payload, null, 2));
+        const payload = {
+          sintomas: prontuario.sintomas?.trim() || "",
+          contextoClinico: prontuario.contextoClinico?.trim() || "",
+          queixaPrincipal: prontuario.queixaPrincipal?.trim() || "",
+          examesRealizados: prontuario.examesRealizados?.trim() || "",
+        };
 
-    fetch("http://localhost:3000/api/gerar-diagnostico", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sintomas: sintomasUsados.trim(),
-        contextoClinico: contextoClinico.trim(),
-        queixaPrincipal: queixaPrincipal.trim(),
-        examesRealizados: examesRealizados.trim(),
-      }),
-    })
+        console.log(
+          "Payload enviado para IA:",
+          JSON.stringify(payload, null, 2)
+        );
+
+        return fetch("http://localhost:3000/api/gerar-diagnostico", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      })
       .then((res) => res.json())
       .then((data) => {
         console.log("Resposta do backend:", data);
@@ -162,7 +154,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (!resultado) throw new Error("Resposta vazia da IA");
 
-        // Resultado é um objeto JSON
         mostrarTelaDiagnosticoFinal(resultado);
         diagnosticoAnterior = resultado;
       })
