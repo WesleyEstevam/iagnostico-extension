@@ -37,22 +37,4 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === "complete" && shouldAutoInject(tab.url)) {
     inject(tabId, tab.url);
   }
-
-  chrome.runtime.onMessageExternal.addListener(
-    (message, sender, sendResponse) => {
-      if (message.type === "PRONTUARIO_SALVO") {
-        console.log("Prontuário recebido:", message.payload);
-
-        // Armazena no localStorage da extensão
-        chrome.storage.local.set({ prontuario: message.payload }, () => {
-          sendResponse({
-            status: "OK",
-            message: "Dados armazenados na extensão.",
-          });
-        });
-
-        return true; // necessário para usar sendResponse async
-      }
-    }
-  );
 });

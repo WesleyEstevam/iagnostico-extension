@@ -267,23 +267,34 @@ document.addEventListener("DOMContentLoaded", () => {
     loadingContainer.appendChild(texto);
     main.appendChild(loadingContainer);
 
-    fetch("http://localhost:3000/api/gerar-diagnostico", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        sintomas: sintomasUsados,
-      }),
-    })
+    // 🔁 Buscar prontuário novamente do back-end
+    fetch("http://localhost:3001/prontuario")
+      .then((res) => {
+        if (!res.ok) throw new Error("Erro ao buscar prontuário.");
+        return res.json();
+      })
+      .then((prontuario) => {
+        const payload = {
+          sintomas: prontuario.sintomas?.trim() || "",
+          contextoClinico: prontuario.contextoClinico?.trim() || "",
+          queixaPrincipal: prontuario.queixaPrincipal?.trim() || "",
+          examesRealizados: prontuario.examesRealizados?.trim() || "",
+        };
+
+        return fetch("http://localhost:3000/api/gerar-diagnostico", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+      })
       .then((res) => res.json())
       .then((data) => {
         loadingContainer.remove();
 
         const novoDiagnostico = data.resultado;
 
-        // Salva o diagnóstico atual como anterior antes de sobrescrever
         const diagnosticoAtualBackup = diagnosticoAnterior;
 
-        // Verifica se o novo resultado tem menor confiança que o anterior
         const confiancaAnterior =
           diagnosticoAnterior?.diagnosticos?.[0]?.confianca || 0;
         const confiancaNova =
@@ -292,24 +303,23 @@ document.addEventListener("DOMContentLoaded", () => {
         const alertaHTML =
           confiancaNova < confiancaAnterior
             ? `
-    <div style="
-      background-color: #fff3cd;
-      color: #856404;
-      border: 1px solid #ffeeba;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 16px;
-    ">
-      A nova sugestão da IA tem menor probabilidade de acerto que a anterior.
-      <br><strong>Considere manter o diagnóstico anterior.</strong>
-      <br><button class="button button-small" id="btn-voltar-anterior" style="margin-top: 10px;">🔙 Voltar para diagnóstico anterior</button>
-    </div>
-  `
+      <div style="
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+      ">
+        A nova sugestão da IA tem menor probabilidade de acerto que a anterior.
+        <br><strong>Considere manter o diagnóstico anterior.</strong>
+        <br><button class="button button-small" id="btn-voltar-anterior" style="margin-top: 10px;">🔙 Voltar para diagnóstico anterior</button>
+      </div>
+    `
             : "";
 
         mostrarTelaDiagnosticoFinal(novoDiagnostico, alertaHTML);
 
-        // Associa o evento do botão após renderizar
         setTimeout(() => {
           const btnVoltar = document.getElementById("btn-voltar-anterior");
           if (btnVoltar) {
@@ -323,10 +333,8 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }, 100);
 
-        // Atualiza o diagnóstico anterior com o novo, depois de já ter usado o backup
         diagnosticoAnterior = novoDiagnostico;
       })
-
       .catch((err) => {
         loadingContainer.remove();
         alert("Erro ao reprocessar diagnóstico.");
