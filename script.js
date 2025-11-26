@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded", () => {
     main.appendChild(loadingContainer);
 
     // 🧠 Buscando prontuário via HTTP (novo back-end)
-    fetch("http://localhost:3001/prontuario")
+    fetch("https://prontuario-iagnostico.vercel.app/prontuario")
       .then((res) => {
         if (!res.ok) throw new Error("Erro ao buscar prontuário.");
         return res.json();
@@ -139,11 +139,14 @@ document.addEventListener("DOMContentLoaded", () => {
           JSON.stringify(payload, null, 2)
         );
 
-        return fetch("http://localhost:3000/api/gerar-diagnostico", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+        return fetch(
+          "https://api-iagnostico.onrender.com/api/gerar-diagnostico",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          }
+        );
       })
       .then((res) => res.json())
       .then((data) => {
@@ -159,7 +162,9 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .catch((err) => {
         loadingContainer.remove();
-        alert("Erro ao gerar diagnóstico com IA.");
+        alert(
+          "Erro ao gerar diagnóstico com IA. Verifique se a conexão com o prontuário está funcionando!"
+        );
         console.error(err);
       });
   });
@@ -342,6 +347,10 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   }
 
+  function aceitarDiagnostico() {
+    alert("Diagnóstico aceito! Encaminhado para o prontuário.");
+    window.location.href = "http://127.0.0.1:5502/index.html";
+  }
   /* ---------- Helpers ---------- */
   function abrirPopup() {
     document.getElementById("modal-overlay").classList.remove("hidden");
@@ -353,9 +362,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function toggle(id, show) {
     document.getElementById(id).classList[show ? "remove" : "add"]("hidden");
-  }
-
-  function aceitarDiagnostico() {
-    alert("Diagnóstico aceito! Encaminhado para o prontuário.");
   }
 });

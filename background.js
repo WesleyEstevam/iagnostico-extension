@@ -1,6 +1,6 @@
 // Lista de URLs onde a sidebar deve abrir automaticamente
 const autoInjectHosts = [
-  "https://prontuarioeletronico-exemplo.vercel.app/*",
+  "https://prontuario-iagnostico.vercel.app/",
   "https://chatgpt.com/*",
   "http://127.0.0.1:5500/index.html/*",
 ];
