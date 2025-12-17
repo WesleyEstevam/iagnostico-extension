@@ -273,7 +273,7 @@ document.addEventListener("DOMContentLoaded", () => {
     main.appendChild(loadingContainer);
 
     // 🔁 Buscar prontuário novamente do back-end
-    fetch("http://localhost:3001/prontuario")
+    fetch("https://prontuario-iagnostico.vercel.app/prontuario")
       .then((res) => {
         if (!res.ok) throw new Error("Erro ao buscar prontuário.");
         return res.json();
@@ -286,11 +286,14 @@ document.addEventListener("DOMContentLoaded", () => {
           examesRealizados: prontuario.examesRealizados?.trim() || "",
         };
 
-        return fetch("http://localhost:3000/api/gerar-diagnostico", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+        return fetch(
+          "https://api-iagnostico.onrender.com/api/gerar-diagnostico",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          }
+        );
       })
       .then((res) => res.json())
       .then((data) => {
