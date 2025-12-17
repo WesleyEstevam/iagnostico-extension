@@ -7,12 +7,7 @@
   },
   "description": "Assistente IA para auxiliar no diagnóstico médico.",
   "permissions": ["scripting", "tabs", "activeTab", "storage"],
-  "host_permissions": [
-    "https://chatgpt.com/*",
-    "https://iagnostico-backend-1bimslsl6-wesleyestevams-projects.vercel.app/*",
-    "https://prontuario-iagnostico.vercel.app/*",
-    "http://127.0.0.1:5500/index.html/*"
-  ],
+  "host_permissions": ["https://prontuario-iagnostico.vercel.app/*"],
   "background": {
     "service_worker": "background.js"
   },
