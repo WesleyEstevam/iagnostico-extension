@@ -6,7 +6,7 @@
     "16": "img/logo_final.png"
   },
   "description": "Assistente IA para auxiliar no diagnóstico médico.",
-  "permissions": ["scripting", "tabs", "activeTab", "storage"],
+  "permissions": ["scripting", "tabs", "activeTab"],
   "host_permissions": ["https://prontuario-iagnostico.vercel.app/*"],
   "background": {
     "service_worker": "background.js"
